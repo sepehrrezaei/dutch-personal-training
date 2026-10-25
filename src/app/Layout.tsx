@@ -49,7 +49,7 @@ function useStudyTimer() {
 function Wordmark() {
   return (
     <NavLink to="/" className="flex items-center gap-2.5">
-      <img src="/icon.svg" alt="" className="h-9 w-9" />
+      <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" className="h-9 w-9" />
       <span className="font-display text-2xl tracking-tight">Tegel</span>
     </NavLink>
   );

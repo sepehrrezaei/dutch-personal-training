@@ -19,7 +19,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error: E
           className="btn-primary"
           onClick={() => {
             this.setState({ error: null });
-            window.location.assign('/');
+            window.location.assign(import.meta.env.BASE_URL);
           }}
         >
           Back to today

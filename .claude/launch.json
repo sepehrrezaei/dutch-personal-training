@@ -26,6 +26,15 @@
         "--strictPort"
       ],
       "port": 4173
+    },
+    {
+      "name": "tegel-pages",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "BASE_PATH=/dutch-personal-training/ npx vite preview --port 4174 --strictPort"
+      ],
+      "port": 4174
     }
   ]
 }
