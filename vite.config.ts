@@ -28,5 +28,5 @@ export default defineConfig({
       workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'], maximumFileSizeToCacheInBytes: 5_000_000 },
     }),
   ],
-  test: { environment: 'node', include: ['src/**/*.test.ts'] },
+  test: { environment: 'node', include: ['src/**/*.test.ts'], setupFiles: ['fake-indexeddb/auto'] },
 });

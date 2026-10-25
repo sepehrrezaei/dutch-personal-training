@@ -1,7 +1,17 @@
 import type { Curriculum } from '@/engine/scheduler';
 import type { GrammarTopic, KnmTheme, Lesson, Unit, VocabItem } from './schema';
 import { unit1 } from './lessons/unit1';
+import { unit2 } from './lessons/unit2';
+import { unit3 } from './lessons/unit3';
+import { unit4 } from './lessons/unit4';
+import { unit5 } from './lessons/unit5';
+import { unit6 } from './lessons/unit6';
 import { grammar1 } from './grammar/g1';
+import { grammar2 } from './grammar/g2';
+import { grammar3 } from './grammar/g3';
+import { grammar4 } from './grammar/g4';
+import { grammar5 } from './grammar/g5';
+import { grammar6 } from './grammar/g6';
 import { KNM } from './knm';
 import { MOCKS } from './exam/mocks';
 import { TUTOR_SCENARIOS } from './tutor';
@@ -15,7 +25,7 @@ export const UNITS: Unit[] = [
   { n: 6, title: 'Samenleving', titleEn: 'Society', blurb: 'Provinces, the municipality, climate, politics, change and your life here.' },
 ];
 
-export const LESSONS: Lesson[] = [...unit1].sort((a, b) => a.n - b.n);
+export const LESSONS: Lesson[] = [...unit1, ...unit2, ...unit3, ...unit4, ...unit5, ...unit6].sort((a, b) => a.n - b.n);
 export const LESSON_COUNT = 42;
 
 const byN = new Map(LESSONS.map((l) => [l.n, l]));
@@ -23,7 +33,7 @@ export function getLesson(n: number): Lesson | undefined {
   return byN.get(n);
 }
 
-export const GRAMMAR: GrammarTopic[] = [...grammar1];
+export const GRAMMAR: GrammarTopic[] = [...grammar1, ...grammar2, ...grammar3, ...grammar4, ...grammar5, ...grammar6].sort((a, b) => a.lesson - b.lesson);
 const grammarById = new Map(GRAMMAR.map((g) => [g.id, g]));
 export function getGrammar(id: string): GrammarTopic | undefined {
   return grammarById.get(id);
