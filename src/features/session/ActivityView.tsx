@@ -29,15 +29,15 @@ export function ActivityView({ activity: a, onDone, onExit }: { activity: Activi
     case 'quiz':
       return <LessonQuiz lessons={a.lessons} onDone={onDone} onExit={onExit} />;
     case 'reading':
-      return <ReadingPractice unit={a.unit} count={a.count} onDone={onDone} />;
+      return <ReadingPractice unit={a.unit} count={a.count} onDone={onDone} onExit={onExit} />;
     case 'listening':
-      return <ListeningPractice unit={a.unit} count={a.count} onDone={onDone} />;
+      return <ListeningPractice unit={a.unit} count={a.count} onDone={onDone} onExit={onExit} />;
     case 'knm':
       return <KnmQuiz theme={a.theme} onDone={onDone} onExit={onExit} />;
     case 'writing':
       return <WritingPractice unit={a.unit} count={a.count} onDone={onDone} />;
     case 'speaking':
-      return <SpeakingPractice unit={a.unit} count={a.count} onDone={onDone} />;
+      return <SpeakingPractice unit={a.unit} count={a.count} onDone={onDone} onExit={onExit} />;
     case 'tutor':
       return <TutorChat scenario={a.scenario} onDone={() => onDone()} />;
     case 'checkpoint':

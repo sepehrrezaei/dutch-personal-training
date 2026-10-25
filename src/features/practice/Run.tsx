@@ -146,7 +146,7 @@ export function Feedback({ result, onNext, buttonRef }: { result: AnswerResult |
                 </p>
                 {result.expected && (!result.ok || result.note || result.unscored) && (
                   <p className="text-ink">
-                    <span className="text-muted">{result.ok ? 'Answer: ' : 'Correct answer: '}</span>
+                    <span className="text-muted">{result.unscored ? 'Model answer: ' : result.ok ? 'Answer: ' : 'Correct answer: '}</span>
                     <strong>{result.expected}</strong>
                   </p>
                 )}

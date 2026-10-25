@@ -2,6 +2,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { Activity } from '@/store/types';
 import { ActivityView } from '@/features/session/ActivityView';
 import { celebrate } from '@/design/fx';
+import { Icon } from '@/design/icons';
+
+/** Activities without their own close button get a back link. */
+const NEEDS_BACK: Activity['kind'][] = ['writing', 'mock', 'tutor'];
 
 /**
  * Runs a single activity outside of the daily session, described in the query string:
@@ -20,6 +24,11 @@ export function PracticeRoute() {
   if (!activity) return null;
   return (
     <div className="mx-auto max-w-2xl">
+      {NEEDS_BACK.includes(activity.kind) && (
+        <button className="mb-4 flex items-center gap-1 text-sm font-semibold text-muted hover:text-cobalt" onClick={() => navigate(back)}>
+          <Icon name="arrowLeft" size={16} /> Back
+        </button>
+      )}
       <ActivityView
         key={params.get('a')}
         activity={activity}

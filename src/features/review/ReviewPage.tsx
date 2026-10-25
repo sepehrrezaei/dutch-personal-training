@@ -37,13 +37,13 @@ export function ReviewPage() {
       <PageHeader eyebrow="Herhalen · spaced repetition" title="Je woorden">
         Words come back just before you would forget them (FSRS algorithm). A few minutes every day is all it takes.
       </PageHeader>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-3">
         {[
           ['cards', due, 'due now', 'text-oranje'],
           ['sparkles', learning, 'still learning', 'text-cobalt'],
           ['check', known, 'known well', 'text-polder'],
         ].map(([icon, n, label, color]) => (
-          <div key={label as string} className="card flex items-center gap-4 p-5">
+          <div key={label as string} className="card flex flex-col items-start gap-2 p-4 sm:flex-row sm:items-center sm:gap-4 sm:p-5">
             <Icon name={icon as string} size={28} className={color as string} />
             <div>
               <p className="font-display text-4xl leading-none">{n}</p>
