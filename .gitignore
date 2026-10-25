@@ -1,0 +1,7 @@
+node_modules
+dist
+dev-dist
+tools/out
+book1.pdf
+.DS_Store
+*.local
