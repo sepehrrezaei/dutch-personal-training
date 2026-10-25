@@ -28,6 +28,7 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_PASSWORD_HASH: ${{ secrets.APP_PASSWORD_HASH }}
       # GitHub Pages has no SPA rewrites: serve the app for unknown paths too.
       - run: cp dist/index.html dist/404.html
       - uses: actions/upload-pages-artifact@v3
