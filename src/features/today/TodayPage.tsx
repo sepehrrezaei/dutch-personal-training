@@ -1,11 +1,10 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getLesson, LESSON_COUNT, lessonsOf, unitOf, UNITS } from '@/content';
 import { activityKey, countDone, dateKey, nextPart, WEEKDAY_MINUTES } from '@/engine/scheduler';
 import { curriculum } from '@/content';
 import { dueCount, isKnown } from '@/engine/srs';
-import { dutchVoices, onVoicesChanged, speak } from '@/engine/speech';
 import { cefrOf, levelOf, liveStreak } from '@/engine/xp';
 import { Icon } from '@/design/icons';
 import { Bar, Modal, ProgressRing } from '@/design/ui';
@@ -15,6 +14,7 @@ import { useStore } from '@/store/store';
 import { ALL_STEPS, PART1 } from '@/store/types';
 import { activityInfo } from '../session/activityMeta';
 import { useTodayPlan } from '../session/usePlan';
+import { VoiceHelp } from '../settings/VoiceHelp';
 
 const DAY_NL = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
 const MONTH_NL = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
@@ -40,8 +40,6 @@ function Welcome() {
   const update = useStore((s) => s.updateSettings);
   const [open, setOpen] = useState(!settings.name && !settings.startDate);
   const [name, setName] = useState('');
-  const [voices, setVoices] = useState(dutchVoices().length);
-  useEffect(() => onVoicesChanged(() => setVoices(dutchVoices().length)), []);
   return (
     <Modal open={open} onClose={() => setOpen(false)} title="Welkom bij Tegel!">
       <div className="space-y-5">
@@ -63,16 +61,7 @@ function Welcome() {
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-3 rounded-2xl bg-glaze p-3 text-sm">
-          <button className="btn-ghost px-3 py-2" onClick={() => speak('Hallo! Welkom. Ik ben je Nederlandse stem.')}>
-            <Icon name="speaker" size={18} /> Test voice
-          </button>
-          {voices ? (
-            <span className="text-muted">{voices} Dutch voice{voices > 1 ? 's' : ''} found.</span>
-          ) : (
-            <span className="text-tulip">No Dutch voice found. On a Mac/iPhone add one in System Settings → Accessibility → Spoken Content → System voice → Manage voices → Dutch.</span>
-          )}
-        </div>
+        <VoiceHelp compact />
         <button
           className="btn-orange w-full"
           onClick={() => {

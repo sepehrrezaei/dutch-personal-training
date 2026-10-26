@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { AI_MODELS, tutorTurn } from '@/engine/ai';
-import { dutchVoices, onVoicesChanged, speak } from '@/engine/speech';
+import { speak, voiceLabel } from '@/engine/speech';
+import { useDutchVoices, VoiceHelp } from './VoiceHelp';
 import { Icon } from '@/design/icons';
 import { Modal, PageHeader } from '@/design/ui';
 import { toast } from '@/design/fx';
@@ -12,6 +13,28 @@ const STYLES: { id: Settings['style']; name: string; blurb: string; bg: string; 
   { id: 'intellij', name: 'IntelliJ', blurb: 'New UI colours, JetBrains Mono and Inter', bg: '#1E1F22', swatches: ['#3574F0', '#C77DBB', '#5FB865'], display: "'JetBrains Mono Variable', monospace", weight: 600 },
   { id: 'delft', name: 'Delft', blurb: 'The original cobalt tiles on cream', bg: '#F6F0E3', swatches: ['#1D3F8F', '#F07A1A', '#D6442F'], display: 'Gloock, serif', weight: 400 },
 ];
+
+function VoiceSelect({ value, onChange, voices, speaker }: { value?: string; onChange: (v: string | undefined) => void; voices: SpeechSynthesisVoice[]; speaker?: number }) {
+  return (
+    <div className="flex gap-2">
+      <select className="input py-2 text-base" value={value ?? ''} onChange={(e) => onChange(e.target.value || undefined)}>
+        <option value="">Automatic — best available</option>
+        {voices.map((v) => (
+          <option key={v.voiceURI} value={v.voiceURI}>
+            {voiceLabel(v)}
+          </option>
+        ))}
+      </select>
+      <button
+        className="btn-ghost shrink-0 px-3 py-2"
+        aria-label="Listen to this voice"
+        onClick={() => speak('Hallo, ik ben je Nederlandse stem.', value ? { voiceURI: value } : { speaker })}
+      >
+        <Icon name="speaker" size={18} />
+      </button>
+    </div>
+  );
+}
 
 function Row({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -30,12 +53,11 @@ export function SettingsPage() {
   const update = useStore((s) => s.updateSettings);
   const replaceAll = useStore((s) => s.replaceAll);
   const reset = useStore((s) => s.reset);
-  const [voices, setVoices] = useState(dutchVoices());
+  const voices = useDutchVoices();
   const [key, setKey] = useState(settings.apiKey ?? '');
   const [testing, setTesting] = useState<'idle' | 'busy' | 'ok' | string>('idle');
   const [confirmReset, setConfirmReset] = useState(false);
   const file = useRef<HTMLInputElement>(null);
-  useEffect(() => onVoicesChanged(() => setVoices(dutchVoices())), []);
 
   const exportData = () => {
     const blob = new Blob([JSON.stringify(snapshot(), null, 1)], { type: 'application/json' });
@@ -133,30 +155,14 @@ export function SettingsPage() {
 
       <section className="card px-5">
         <h2 className="pt-5 text-xl">Voice</h2>
-        {voices.length === 0 && (
-          <p className="mt-2 rounded-xl bg-tulip/10 p-3 text-sm text-tulip">
-            No Dutch voice found in this browser. On macOS/iOS: System Settings → Accessibility → Spoken Content → Manage voices → add a Dutch voice (e.g. Xander, Claire). Chrome also offers “Google Nederlands”.
-          </p>
-        )}
+        <div className="mt-3">
+          <VoiceHelp />
+        </div>
         <Row title="Main voice">
-          <select className="input py-2 text-base" value={settings.voiceURI ?? ''} onChange={(e) => update({ voiceURI: e.target.value || undefined })}>
-            <option value="">Automatic</option>
-            {voices.map((v) => (
-              <option key={v.voiceURI} value={v.voiceURI}>
-                {v.name} ({v.lang})
-              </option>
-            ))}
-          </select>
+          <VoiceSelect value={settings.voiceURI} onChange={(voiceURI) => update({ voiceURI })} voices={voices} />
         </Row>
         <Row title="Second voice" hint="Used for the other person in dialogues.">
-          <select className="input py-2 text-base" value={settings.voiceURI2 ?? ''} onChange={(e) => update({ voiceURI2: e.target.value || undefined })}>
-            <option value="">Automatic</option>
-            {voices.map((v) => (
-              <option key={v.voiceURI} value={v.voiceURI}>
-                {v.name} ({v.lang})
-              </option>
-            ))}
-          </select>
+          <VoiceSelect value={settings.voiceURI2} onChange={(voiceURI2) => update({ voiceURI2 })} voices={voices} speaker={1} />
         </Row>
         <Row title={`Speaking speed: ${settings.rate.toFixed(2)}×`}>
           <div className="flex items-center gap-3">

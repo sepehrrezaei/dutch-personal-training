@@ -6,15 +6,45 @@ export function ttsSupported(): boolean {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
 }
 
+export type VoiceQuality = 'natural' | 'premium' | 'basic';
+
+/**
+ * How natural a voice sounds, guessed from its name:
+ * natural = neural voices (Edge "Online (Natural)", Android network voices),
+ * premium = Apple Premium/Enhanced voices and Google's Chrome voices, basic = compact system voices.
+ */
+export function voiceQuality(v: SpeechSynthesisVoice): VoiceQuality {
+  if (/natural|neural|online|wavenet/i.test(v.name)) return 'natural';
+  if (/premium|enhanced|verbeterd|hoogwaardig|google|siri/i.test(v.name)) return 'premium';
+  return 'basic';
+}
+
+const QUALITY_RANK: Record<VoiceQuality, number> = { natural: 0, premium: 10, basic: 20 };
+
+/** Dutch voices, best first: quality, then Netherlands Dutch before Flemish. */
 export function dutchVoices(): SpeechSynthesisVoice[] {
   if (!ttsSupported()) return [];
   const all = window.speechSynthesis.getVoices();
   if (all.length) voicesCache = all;
-  const nl = voicesCache.filter((v) => v.lang.toLowerCase().startsWith('nl'));
-  // Prefer Netherlands Dutch over Flemish, and higher quality voices first.
-  const rank = (v: SpeechSynthesisVoice) =>
-    (v.lang.toLowerCase() === 'nl-nl' ? 0 : 10) + (/premium|enhanced|natural|google/i.test(v.name) ? 0 : 5);
+  const nl = voicesCache.filter((v) => v.lang.toLowerCase().replace('_', '-').startsWith('nl'));
+  const rank = (v: SpeechSynthesisVoice) => QUALITY_RANK[voiceQuality(v)] + (v.lang.toLowerCase().replace('_', '-') === 'nl-nl' ? 0 : 3);
   return nl.sort((a, b) => rank(a) - rank(b));
+}
+
+/** The best quality available on this device, or null when there is no Dutch voice at all. */
+export function bestQuality(): VoiceQuality | null {
+  const v = dutchVoices()[0];
+  return v ? voiceQuality(v) : null;
+}
+
+/** A readable label for a voice: "Fenna (Netherlands) · natural". */
+export function voiceLabel(v: SpeechSynthesisVoice): string {
+  const name = v.name
+    .replace(/^Microsoft\s+/i, '')
+    .replace(/\s*Online \(Natural\)/i, '')
+    .replace(/\s*-\s*Dutch.*$/i, '');
+  const region = v.lang.toLowerCase().includes('be') ? 'Belgium' : 'Netherlands';
+  return `${name} (${region}) · ${voiceQuality(v)}`;
 }
 
 export function onVoicesChanged(cb: () => void): () => void {
@@ -43,8 +73,9 @@ function pickVoice(opts: SpeakOptions): SpeechSynthesisVoice | undefined {
   const exact = wanted ? voices.find((v) => v.voiceURI === wanted) : undefined;
   if (exact) return exact;
   if (opts.speaker === 1) {
-    const primary = config.voiceURI ? voices.find((v) => v.voiceURI === config.voiceURI) : voices[0];
-    return voices.find((v) => v !== primary) ?? voices[0];
+    // Second speaker: the best voice that differs from the main one, so dialogues have two people.
+    const primary = (config.voiceURI && voices.find((v) => v.voiceURI === config.voiceURI)) || voices[0];
+    return voices.find((v) => v !== primary && v.name.split(' ')[0] !== primary.name.split(' ')[0]) ?? voices.find((v) => v !== primary) ?? primary;
   }
   return voices[0];
 }
