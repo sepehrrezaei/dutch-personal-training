@@ -1,3 +1,6 @@
+@import '@fontsource-variable/source-serif-4/wght.css';
+@import '@fontsource-variable/inter/wght.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
 @import '@fontsource/gloock/latin-400.css';
 @import '@fontsource/gloock/latin-ext-400.css';
 @import '@fontsource-variable/figtree/wght.css';
@@ -6,21 +9,117 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --glaze: 246 240 227; /* tin-glaze cream */
+/*
+ * Three styles × light/dark. Colours are "r g b" triples so Tailwind can add opacity.
+ * cobalt = primary, oranje = highlight/CTA, polder = success, tulip = error,
+ * de/het = article colours used in vocabulary (must stay clearly different).
+ */
+
+/* ---------- Claude (default): warm ivory, clay accent, serif reading text ---------- */
+:root,
+html[data-style='claude'] {
+  --glaze: 245 244 237;
+  --paper: 250 249 245;
+  --ink: 31 30 29;
+  --muted: 115 114 108;
+  --line: 229 226 217;
+  --cobalt: 201 100 66;
+  --cobalt-soft: 245 228 218;
+  --onprimary: 255 255 255;
+  --oranje: 201 100 66;
+  --tulip: 181 61 46;
+  --polder: 74 128 84;
+  --de: 201 100 66;
+  --het: 79 107 191;
+  --font-display: 'Source Serif 4 Variable', Georgia, serif;
+  --font-sans: 'Inter Variable', system-ui, sans-serif;
+  --display-weight: 500;
+  --display-tracking: -0.015em;
+  --dots: 0;
+  --glow: 0.1;
+  color-scheme: light;
+}
+html[data-style='claude'][data-theme='dark'] {
+  --glaze: 38 38 36;
+  --paper: 48 48 46;
+  --ink: 245 244 237;
+  --muted: 166 163 154;
+  --line: 66 65 60;
+  --cobalt: 217 119 87;
+  --cobalt-soft: 74 52 43;
+  --onprimary: 255 255 255;
+  --oranje: 217 119 87;
+  --tulip: 232 106 90;
+  --polder: 120 178 128;
+  --de: 217 119 87;
+  --het: 128 156 235;
+  color-scheme: dark;
+}
+
+/* ---------- IntelliJ: New UI Light / Dark, JetBrains Mono headings ---------- */
+html[data-style='intellij'] {
+  --glaze: 247 248 250;
+  --paper: 255 255 255;
+  --ink: 30 31 34;
+  --muted: 108 112 126;
+  --line: 223 225 229;
+  --cobalt: 53 116 240;
+  --cobalt-soft: 237 243 255;
+  --onprimary: 255 255 255;
+  --oranje: 32 138 60;
+  --tulip: 219 59 75;
+  --polder: 32 138 60;
+  --de: 53 116 240;
+  --het: 155 77 202;
+  --font-display: 'JetBrains Mono Variable', ui-monospace, monospace;
+  --font-sans: 'Inter Variable', system-ui, sans-serif;
+  --display-weight: 600;
+  --display-tracking: -0.03em;
+  --dots: 0;
+  --glow: 0.06;
+  color-scheme: light;
+}
+html[data-style='intellij'][data-theme='dark'] {
+  --glaze: 30 31 34;
+  --paper: 43 45 48;
+  --ink: 223 225 229;
+  --muted: 134 138 145;
+  --line: 57 59 64;
+  --cobalt: 53 116 240;
+  --cobalt-soft: 37 50 77;
+  --onprimary: 255 255 255;
+  --oranje: 87 150 92;
+  --tulip: 247 84 100;
+  --polder: 95 184 101;
+  --de: 86 168 245;
+  --het: 199 125 187;
+  color-scheme: dark;
+}
+
+/* ---------- Delft: the original tile look ---------- */
+html[data-style='delft'] {
+  --glaze: 246 240 227;
   --paper: 255 252 245;
   --ink: 22 30 52;
   --muted: 98 104 124;
   --line: 222 212 190;
   --cobalt: 29 63 143;
   --cobalt-soft: 214 224 245;
+  --onprimary: 255 255 255;
   --oranje: 240 122 26;
   --tulip: 214 68 47;
   --polder: 46 135 92;
+  --de: 29 63 143;
+  --het: 240 122 26;
+  --font-display: Gloock, Georgia, serif;
+  --font-sans: 'Figtree Variable', system-ui, sans-serif;
+  --display-weight: 400;
+  --display-tracking: -0.02em;
+  --dots: 0.07;
+  --glow: 0.45;
   color-scheme: light;
 }
-
-[data-theme='dark'] {
+html[data-style='delft'][data-theme='dark'] {
   --glaze: 14 19 36;
   --paper: 22 29 52;
   --ink: 236 232 220;
@@ -28,10 +127,28 @@
   --line: 44 54 86;
   --cobalt: 120 156 240;
   --cobalt-soft: 33 45 84;
+  --onprimary: 14 19 36;
   --oranje: 255 146 60;
   --tulip: 240 106 84;
   --polder: 84 190 136;
+  --de: 120 156 240;
+  --het: 255 146 60;
   color-scheme: dark;
+}
+
+/* Before settings load (e.g. the password screen), follow the system theme in the default style. */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) {
+    --glaze: 38 38 36;
+    --paper: 48 48 46;
+    --ink: 245 244 237;
+    --muted: 166 163 154;
+    --line: 66 65 60;
+    --cobalt: 217 119 87;
+    --cobalt-soft: 74 52 43;
+    --oranje: 217 119 87;
+    color-scheme: dark;
+  }
 }
 
 @layer base {
@@ -42,12 +159,17 @@
     @apply bg-glaze font-sans text-ink antialiased;
     min-height: 100dvh;
     background-image:
-      radial-gradient(circle at 1px 1px, rgb(var(--cobalt) / 0.07) 1px, transparent 0),
+      radial-gradient(circle at 1px 1px, rgb(var(--cobalt) / var(--dots)) 1px, transparent 0),
       radial-gradient(ellipse at top, rgb(var(--paper)) 0%, transparent 70%);
     background-size: 22px 22px, 100% 100%;
   }
   h1, h2, h3 {
-    @apply font-display tracking-tight;
+    @apply font-display;
+    font-weight: var(--display-weight);
+    letter-spacing: var(--display-tracking);
+  }
+  .font-display {
+    font-weight: var(--display-weight);
   }
   ::selection {
     background: rgb(var(--oranje) / 0.35);
@@ -67,10 +189,7 @@
     @apply inline-flex select-none items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold transition active:translate-y-[2px] disabled:cursor-not-allowed disabled:opacity-40;
   }
   .btn-primary {
-    @apply btn bg-cobalt text-white shadow-press hover:brightness-110;
-  }
-  [data-theme='dark'] .btn-primary {
-    @apply text-glaze;
+    @apply btn bg-cobalt text-onprimary shadow-press hover:brightness-110;
   }
   .btn-orange {
     @apply btn bg-oranje text-white shadow-press hover:brightness-105;

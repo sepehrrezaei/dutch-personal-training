@@ -130,7 +130,7 @@ export function Layout() {
               <NavLink
                 to={n.to}
                 end={n.to === '/'}
-                className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-2.5 font-semibold transition ${isActive ? 'bg-cobalt text-white shadow-press' : 'text-ink/80 hover:bg-line/50'}`}
+                className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-2.5 font-semibold transition ${isActive ? 'bg-cobalt text-onprimary shadow-press' : 'text-ink/80 hover:bg-line/50'}`}
               >
                 <Icon name={n.icon} />
                 <span>{n.label}</span>

@@ -17,17 +17,26 @@ import { PracticeRoute } from './PracticeRoute';
 
 function useTheme() {
   const theme = useStore((s) => s.settings.theme);
+  const style = useStore((s) => s.settings.style) ?? 'claude';
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const apply = () => {
       const dark = theme === 'dark' || (theme === 'system' && mq.matches);
-      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0e1324' : '#1d3f8f');
+      const root = document.documentElement;
+      root.dataset.theme = dark ? 'dark' : 'light';
+      root.dataset.style = style;
+      try {
+        localStorage.setItem('tegel-look', JSON.stringify({ style, theme }));
+      } catch {
+        /* not critical: only avoids a flash of the default look on start */
+      }
+      const bg = getComputedStyle(root).getPropertyValue('--glaze').trim().split(/\s+/).join(',');
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', `rgb(${bg})`);
     };
     apply();
     mq.addEventListener('change', apply);
     return () => mq.removeEventListener('change', apply);
-  }, [theme]);
+  }, [theme, style]);
 }
 
 function useSpeechConfig() {

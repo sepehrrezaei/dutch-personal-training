@@ -28,7 +28,7 @@ export function PathPage() {
           const allLessons = lessons.every((n) => (state.lessons[n]?.steps.length ?? 0) >= 7);
           return (
             <section key={u.n} className="card overflow-hidden">
-              <div className={`flex items-center gap-4 px-6 py-5 ${unitDone ? 'bg-cobalt text-white' : 'bg-cobalt-soft/50'}`}>
+              <div className={`flex items-center gap-4 px-6 py-5 ${unitDone ? 'bg-cobalt text-onprimary' : 'bg-cobalt-soft/50'}`}>
                 <span className={`font-display text-5xl ${unitDone ? 'text-white/80' : 'text-cobalt/40'}`}>{u.n}</span>
                 <div className="min-w-0 flex-1">
                   <h2 className="text-2xl">{u.title}</h2>

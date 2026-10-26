@@ -10,6 +10,15 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>Tegel — Dutch to A2</title>
+    <script>
+      // Apply the saved style before the app loads, so there is no flash of the default look.
+      try {
+        var look = JSON.parse(localStorage.getItem('tegel-look') || '{}');
+        var dark = look.theme === 'dark' || (look.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.style = look.style || 'claude';
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

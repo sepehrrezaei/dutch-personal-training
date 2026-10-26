@@ -15,6 +15,6 @@ export function emptyData(): AppData {
     results: [],
     badges: [],
     seen: [],
-    settings: { theme: 'system', rate: 0.95, weekendMinutes: 90, model: 'claude-haiku-5-5', sound: true },
+    settings: { theme: 'system', style: 'claude', rate: 0.95, weekendMinutes: 90, model: 'claude-haiku-5-5', sound: true },
   };
 }

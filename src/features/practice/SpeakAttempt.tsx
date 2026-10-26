@@ -84,7 +84,7 @@ export function SpeakAttempt({ target, onResult, locked, freeAnswer = false }: {
           <Icon name="stop" size={30} />
         </motion.button>
       ) : (
-        <button type="button" disabled={locked} onClick={start} className="grid h-20 w-20 place-items-center rounded-full bg-cobalt text-white shadow-lg transition hover:scale-105 disabled:opacity-40" aria-label="Speak">
+        <button type="button" disabled={locked} onClick={start} className="grid h-20 w-20 place-items-center rounded-full bg-cobalt text-onprimary shadow-lg transition hover:scale-105 disabled:opacity-40" aria-label="Speak">
           <Icon name="mic" size={32} />
         </button>
       )}

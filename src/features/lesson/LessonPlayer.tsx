@@ -62,7 +62,7 @@ export function LessonPlayer({ lesson, steps, onDone, onExit }: { lesson: Lesson
           <div
             key={s}
             className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-              k === i ? 'border-cobalt bg-cobalt text-white' : k < i ? 'border-polder/40 bg-[rgb(var(--polder)/0.1)] text-polder' : 'border-line text-muted'
+              k === i ? 'border-cobalt bg-cobalt text-onprimary' : k < i ? 'border-polder/40 bg-[rgb(var(--polder)/0.1)] text-polder' : 'border-line text-muted'
             }`}
           >
             <Icon name={k < i ? 'check' : STEP_META[s].icon} size={14} />

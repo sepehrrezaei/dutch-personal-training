@@ -5,7 +5,13 @@ import { Icon } from '@/design/icons';
 import { Modal, PageHeader } from '@/design/ui';
 import { toast } from '@/design/fx';
 import { snapshot, useStore } from '@/store/store';
-import type { AppData } from '@/store/types';
+import type { AppData, Settings } from '@/store/types';
+
+const STYLES: { id: Settings['style']; name: string; blurb: string; bg: string; swatches: string[]; display: string; weight: number }[] = [
+  { id: 'claude', name: 'Claude', blurb: 'Warm ivory, clay accents, serif reading text', bg: '#F0EEE6', swatches: ['#C96442', '#4F6BBF', '#1F1E1D'], display: "'Source Serif 4 Variable', serif", weight: 500 },
+  { id: 'intellij', name: 'IntelliJ', blurb: 'New UI colours, JetBrains Mono and Inter', bg: '#1E1F22', swatches: ['#3574F0', '#C77DBB', '#5FB865'], display: "'JetBrains Mono Variable', monospace", weight: 600 },
+  { id: 'delft', name: 'Delft', blurb: 'The original cobalt tiles on cream', bg: '#F6F0E3', swatches: ['#1D3F8F', '#F07A1A', '#D6442F'], display: 'Gloock, serif', weight: 400 },
+];
 
 function Row({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -72,7 +78,35 @@ export function SettingsPage() {
         <Row title="Your name">
           <input className="input py-2 text-base" value={settings.name ?? ''} onChange={(e) => update({ name: e.target.value || undefined })} />
         </Row>
-        <Row title="Theme">
+        <div className="border-b border-line py-4">
+          <p className="mb-3 font-semibold">Style</p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {STYLES.map((st) => {
+              const active = (settings.style ?? 'claude') === st.id;
+              return (
+                <button
+                  key={st.id}
+                  onClick={() => update({ style: st.id })}
+                  className={`overflow-hidden rounded-2xl border-2 text-left transition ${active ? 'border-cobalt' : 'border-line hover:border-muted'}`}
+                  aria-pressed={active}
+                >
+                  <div className="flex h-16 items-end gap-1.5 p-3" style={{ background: st.bg }}>
+                    {st.swatches.map((c) => (
+                      <span key={c} className="h-6 w-6 rounded-md" style={{ background: c }} />
+                    ))}
+                  </div>
+                  <div className="p-3">
+                    <p className="text-lg leading-tight" style={{ fontFamily: st.display, fontWeight: st.weight }}>
+                      {st.name}
+                    </p>
+                    <p className="text-xs text-muted">{st.blurb}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <Row title="Light or dark">
           <div className="grid grid-cols-3 gap-2">
             {(['system', 'light', 'dark'] as const).map((t) => (
               <button key={t} className={settings.theme === t ? 'btn-primary py-2 text-sm' : 'btn-ghost py-2 text-sm'} onClick={() => update({ theme: t })}>

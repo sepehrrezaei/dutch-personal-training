@@ -39,7 +39,7 @@ export function ExamPage() {
           return (
             <Link key={s.key} to={practiceHref(s.act(unit), '/exam')} className="card group flex flex-col gap-3 p-5 transition hover:-translate-y-0.5 hover:border-cobalt/50">
               <div className="flex items-center gap-3">
-                <span className="grid h-12 w-12 place-items-center rounded-2xl bg-cobalt text-white">
+                <span className="grid h-12 w-12 place-items-center rounded-2xl bg-cobalt text-onprimary">
                   <Icon name={s.icon} />
                 </span>
                 <div>

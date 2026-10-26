@@ -74,7 +74,7 @@ export function DialoguePlayer({ item, maxPlays = 2, autoPlay = true }: { item: 
       <button
         onClick={play}
         disabled={playing || plays >= maxPlays}
-        className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-cobalt text-white shadow-press disabled:opacity-40"
+        className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-cobalt text-onprimary shadow-press disabled:opacity-40"
         aria-label="Play"
       >
         <Icon name={playing ? 'headphones' : 'play'} size={24} />

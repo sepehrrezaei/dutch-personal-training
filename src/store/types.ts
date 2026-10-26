@@ -75,6 +75,7 @@ export interface ExamResult {
 
 export interface Settings {
   theme: 'system' | 'light' | 'dark';
+  style: 'claude' | 'intellij' | 'delft';
   voiceURI?: string;
   voiceURI2?: string;
   rate: number;

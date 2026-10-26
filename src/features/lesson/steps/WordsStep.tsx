@@ -14,7 +14,7 @@ const GROUP = 8;
 
 export function ArticleChip({ art }: { art?: 'de' | 'het' }) {
   if (!art) return null;
-  return <span className={`rounded-md px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-white ${art === 'de' ? 'bg-cobalt' : 'bg-oranje'}`}>{art}</span>;
+  return <span className={`rounded-md px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-white ${art === 'de' ? 'bg-de' : 'bg-het'}`}>{art}</span>;
 }
 
 function WordCard({ v }: { v: VocabItem }) {
@@ -23,7 +23,7 @@ function WordCard({ v }: { v: VocabItem }) {
   }, [v]);
   return (
     <div className="card relative overflow-hidden p-7 text-center">
-      <div className={`absolute inset-x-0 top-0 h-1.5 ${v.art === 'het' ? 'bg-oranje' : v.art === 'de' ? 'bg-cobalt' : 'bg-line'}`} />
+      <div className={`absolute inset-x-0 top-0 h-1.5 ${v.art === 'het' ? 'bg-het' : v.art === 'de' ? 'bg-de' : 'bg-line'}`} />
       <div className="mb-2 flex justify-center">
         <ArticleChip art={v.art} />
       </div>
@@ -122,7 +122,7 @@ export function WordsStep({ lesson, onDone }: { lesson: Lesson; onDone: () => vo
           )}
         </div>
         <p className="text-center text-xs text-muted">
-          <span className="font-bold text-cobalt">blue = de</span> · <span className="font-bold text-oranje">orange = het</span> — colour helps you remember the article.
+          <ArticleChip art="de" /> <ArticleChip art="het" /> — the colour helps you remember the article.
         </p>
       </div>
     );

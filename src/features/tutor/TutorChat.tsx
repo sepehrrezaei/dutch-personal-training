@@ -20,7 +20,7 @@ function Bubble({ m }: { m: Msg }) {
   const mine = m.role === 'user';
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
-      <div className={`max-w-[85%] rounded-3xl px-4 py-2.5 text-lg ${mine ? 'rounded-br-md bg-cobalt text-white' : 'rounded-bl-md border border-line bg-paper'}`} lang="nl">
+      <div className={`max-w-[85%] rounded-3xl px-4 py-2.5 text-lg ${mine ? 'rounded-br-md bg-cobalt text-onprimary' : 'rounded-bl-md border border-line bg-paper'}`} lang="nl">
         {m.text}
       </div>
       {!mine && (
