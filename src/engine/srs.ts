@@ -4,6 +4,8 @@ import type { SrsCard } from '@/store/types';
 export { Rating };
 
 const scheduler = fsrs(generatorParameters({ request_retention: 0.9, enable_fuzz: true, maximum_interval: 180 }));
+/** Marked (hard) words aim for higher retention, so they come back sooner and more often. */
+const flashScheduler = fsrs(generatorParameters({ request_retention: 0.95, enable_fuzz: true, maximum_interval: 120 }));
 
 function toCard(c: SrsCard): Card {
   return {
@@ -39,9 +41,34 @@ export function newCard(id: string, lesson: number, now = new Date()): SrsCard {
   return fromCard(id, lesson, createEmptyCard(now));
 }
 
-export function review(card: SrsCard, rating: Grade, now = new Date()): SrsCard {
-  const next = scheduler.next(toCard(card), now, rating);
+export function review(card: SrsCard, rating: Grade, now = new Date(), flash = false): SrsCard {
+  const next = (flash ? flashScheduler : scheduler).next(toCard(card), now, rating);
   return fromCard(card.id, card.lesson, next.card);
+}
+
+/** When each rating would bring a flashcard back, e.g. { 1: "10m", 3: "2d" }. */
+export function previewIntervals(card: SrsCard, now = new Date()): Record<Grade, string> {
+  const out = {} as Record<Grade, string>;
+  for (const g of [Rating.Again, Rating.Hard, Rating.Good, Rating.Easy] as Grade[]) {
+    const due = flashScheduler.next(toCard(card), now, g).card.due.getTime();
+    out[g] = formatInterval(due - now.getTime());
+  }
+  return out;
+}
+
+export function formatInterval(ms: number): string {
+  const min = Math.max(1, Math.round(ms / 60000));
+  if (min < 60) return `${min}m`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `${h}h`;
+  const d = Math.round(h / 24);
+  if (d < 31) return `${d}d`;
+  return `${Math.round(d / 30)}mo`;
+}
+
+/** Words forgotten again and again ("leeches") deserve a mnemonic or extra flashcard practice. */
+export function isLeech(card: SrsCard): boolean {
+  return card.lapses >= 3;
 }
 
 /** Cards due by `now`, most overdue first, capped at `limit`. */

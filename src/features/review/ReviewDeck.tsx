@@ -12,6 +12,7 @@ import type { Grade } from 'ts-fsrs';
 import { Run, type AnswerResult, type RunResult } from '../practice/Run';
 import { TextAnswer } from '../practice/Exercises';
 import { ArticleChip } from '../lesson/steps/WordsStep';
+import { MarkButton } from '../flash/MarkButton';
 
 interface Item {
   id: string;
@@ -27,7 +28,10 @@ function Recognize({ v, rate }: { v: VocabItem; rate: (g: Grade) => void }) {
   return (
     <div className="flex flex-col gap-6">
       <p className="eyebrow">Do you know this word?</p>
-      <div className="card p-8 text-center">
+      <div className="card relative p-8 text-center">
+        <div className="absolute right-3 top-3">
+          <MarkButton v={v} />
+        </div>
         <div className="mb-2 flex justify-center">
           <ArticleChip art={v.art} />
         </div>
@@ -48,7 +52,7 @@ function Recognize({ v, rate }: { v: VocabItem; rate: (g: Grade) => void }) {
           {(
             [
               [Rating.Again, 'Again', 'bg-tulip'],
-              [Rating.Hard, 'Hard', 'bg-oranje'],
+              [Rating.Hard, 'Hard', 'bg-muted'],
               [Rating.Good, 'Good', 'bg-cobalt'],
               [Rating.Easy, 'Easy', 'bg-polder'],
             ] as const
@@ -92,7 +96,19 @@ function Produce({ v, mode, answer, locked }: { v: VocabItem; mode: ReviewMode; 
           const secs = (Date.now() - started.current) / 1000;
           const g: Grade = !r.ok ? Rating.Again : r.verdict === 'correct' ? (secs < 6 ? Rating.Easy : Rating.Good) : Rating.Hard;
           speak(withArticle(v));
-          answer({ ok: r.ok, expected: `${withArticle(v)} — ${v.en}`, note: r.note }, g);
+          answer(
+            {
+              ok: r.ok,
+              expected: `${withArticle(v)} — ${v.en}`,
+              note: r.note,
+              extra: r.ok ? undefined : (
+                <div className="mt-1">
+                  <MarkButton v={v} size="sm" label />
+                </div>
+              ),
+            },
+            g,
+          );
         }}
       />
     </div>

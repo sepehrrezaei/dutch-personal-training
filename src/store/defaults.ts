@@ -8,6 +8,8 @@ export function emptyData(): AppData {
     lessons: {},
     checkpoints: [],
     srs: {},
+    marked: {},
+    flash: {},
     days: {},
     xp: 0,
     streak: { count: 0, best: 0, freezes: 1 },

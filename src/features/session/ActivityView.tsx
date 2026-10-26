@@ -2,6 +2,7 @@ import { getLesson } from '@/content';
 import type { Activity } from '@/store/types';
 import { LessonPlayer } from '../lesson/LessonPlayer';
 import { ReviewDeck } from '../review/ReviewDeck';
+import { FlashSession } from '../flash/FlashSession';
 import type { RunResult } from '../practice/Run';
 import { Drill } from '../gym/Drill';
 import { LessonQuiz } from '../exam/LessonQuiz';
@@ -19,6 +20,8 @@ export function ActivityView({ activity: a, onDone, onExit }: { activity: Activi
   switch (a.kind) {
     case 'srs':
       return <ReviewDeck limit={a.limit} onDone={onDone} onExit={onExit} />;
+    case 'flash':
+      return <FlashSession limit={a.limit} onDone={onDone} onExit={onExit} />;
     case 'lesson': {
       const l = getLesson(a.lesson);
       if (!l) return <Missing onDone={onDone} what={`Lesson ${a.lesson}`} />;

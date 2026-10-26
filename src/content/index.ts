@@ -95,3 +95,22 @@ export function lookupWord(word: string): VocabItem | undefined {
   }
   return glossary.get(word.toLowerCase().replace(/[’]/g, "'"));
 }
+
+const lessonByVocab = new Map<VocabItem, number>(LESSONS.flatMap((l) => l.vocab.map((v) => [v, l.n] as const)));
+/** The lesson that teaches a vocab item. */
+export function lessonOfVocab(v: VocabItem): number | undefined {
+  return lessonByVocab.get(v);
+}
+
+/** A sentence that uses the word: its own example, or a line from the lesson text. */
+export function exampleFor(lesson: number, v: VocabItem): [string, string] | undefined {
+  if (v.ex) return v.ex;
+  const l = getLesson(lesson);
+  if (!l) return undefined;
+  const forms = [...acceptedForms({ ...v, art: undefined }), v.pl].filter((f): f is string => !!f && f.length > 1).map((f) => f.toLowerCase());
+  const hit = l.text.find((p) => {
+    const words = p.nl.toLowerCase().replace(/[.,!?;:"“”()]/g, ' ').split(/\s+/);
+    return forms.some((f) => (f.includes(' ') ? p.nl.toLowerCase().includes(f) : words.includes(f)));
+  });
+  return hit ? [hit.nl, hit.en] : undefined;
+}

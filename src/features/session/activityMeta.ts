@@ -17,6 +17,8 @@ export function activityInfo(a: Activity): { title: string; sub: string; icon: s
   switch (a.kind) {
     case 'srs':
       return { title: 'Herhalen', sub: 'Review words that are due', icon: 'cards' };
+    case 'flash':
+      return { title: 'Mijn kaarten', sub: 'Flashcards for the words you marked as hard', icon: 'star' };
     case 'lesson': {
       const l = getLesson(a.lesson);
       return { title: `Les ${a.lesson}: ${l?.title ?? ''}`, sub: a.steps.map((s) => STEP_META[s].label).join(' · '), icon: l?.icon ?? 'book' };

@@ -12,7 +12,7 @@ export interface Curriculum {
 }
 
 export const WEEKDAY_MINUTES = 30;
-export const PLAN_VERSION = 2;
+export const PLAN_VERSION = 3;
 const LESSONS_PER_WEEK = 2;
 
 export const STEP_MINUTES: Record<StepId, number> = {
@@ -133,6 +133,14 @@ function pickDrill(lessonsDone: number, d: Date, offset = 0): DrillId {
   return list[(dayIndex(d) + offset) % list.length];
 }
 
+/** Marked hard words: a short flashcard round when some are due. */
+function flashActivity(data: AppData, now: Date, cap: number): Activity | null {
+  const due = dueCount(data.flash ?? {}, now.getTime());
+  if (!due) return null;
+  const minutes = Math.max(2, Math.min(cap, Math.ceil(due * 0.25)));
+  return { kind: 'flash', minutes, limit: minutes * 5 };
+}
+
 function srsActivity(due: number, cap: number): Activity | null {
   if (due <= 0) return null;
   const minutes = Math.max(3, Math.min(cap, Math.ceil(due * 0.2)));
@@ -150,6 +158,12 @@ function fit(acts: Activity[], target: number): Activity[] {
     const drill = out.findIndex((a) => a.kind === 'drill');
     if (drill >= 0) {
       out.splice(drill, 1);
+      continue;
+    }
+    const flash = out.find((a) => a.kind === 'flash');
+    if (flash && flash.minutes > 2) {
+      flash.minutes = Math.max(2, flash.minutes - (total(out) - target));
+      if (flash.kind === 'flash') flash.limit = flash.minutes * 5;
       continue;
     }
     const srs = out.find((a) => a.kind === 'srs');
@@ -212,6 +226,7 @@ export function buildSession(data: AppData, cur: Curriculum, today: Date): Sessi
   if (dayType === 'weekday' || (dayType === 'friday' && !done.length)) {
     target = WEEKDAY_MINUTES;
     push(srsActivity(due, 8));
+    push(flashActivity(data, today, 4));
     if (next) {
       acts.push({ kind: 'lesson', lesson: next.lesson, steps: next.steps, minutes: stepsMinutes(next.steps) });
       title = `Les ${next.lesson}`;
@@ -231,6 +246,7 @@ export function buildSession(data: AppData, cur: Curriculum, today: Date): Sessi
   if (dayType === 'friday') {
     target = WEEKDAY_MINUTES;
     push(srsActivity(due, 10));
+    push(flashActivity(data, today, 6));
     acts.push({ kind: 'quiz', lessons: done.slice(-4), minutes: 8 });
     acts.push({ kind: 'speaking', unit, count: 2, minutes: 6 });
     acts.push({ kind: 'drill', drill: pickDrill(done.length, today), minutes: 6 });
@@ -262,6 +278,7 @@ export function buildSession(data: AppData, cur: Curriculum, today: Date): Sessi
 
   if (dayType === 'saturday') {
     push(srsActivity(due, 10));
+    push(flashActivity(data, today, 8));
     if (examPhase) {
       acts.push({ kind: 'mock', mock: mockNo, part: 'A', minutes: 60 });
       title = `Mock exam ${mockNo} · part A`;
@@ -279,6 +296,7 @@ export function buildSession(data: AppData, cur: Curriculum, today: Date): Sessi
     }
   } else {
     push(srsActivity(due, 10));
+    push(flashActivity(data, today, 8));
     if (examPhase) {
       acts.push({ kind: 'mock', mock: mockNo, part: 'B', minutes: 35 });
       title = `Mock exam ${mockNo} · part B`;

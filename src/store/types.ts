@@ -26,10 +26,18 @@ export interface SrsCard {
   last_review?: number;
 }
 
+export interface MarkedWord {
+  lesson: number;
+  addedAt: number;
+  /** The learner's own memory hook (mnemonic). */
+  note?: string;
+}
+
 export type DrillId = 'dehet' | 'verbs' | 'numbers' | 'clock' | 'spelling' | 'perfect';
 
 export type Activity =
   | { kind: 'srs'; minutes: number; limit: number }
+  | { kind: 'flash'; minutes: number; limit: number }
   | { kind: 'lesson'; lesson: number; steps: StepId[]; minutes: number }
   | { kind: 'drill'; drill: DrillId; minutes: number }
   | { kind: 'quiz'; lessons: number[]; minutes: number }
@@ -98,6 +106,10 @@ export interface AppData {
   lessons: Record<number, LessonProgress>;
   checkpoints: number[];
   srs: Record<string, SrsCard>;
+  /** Words the learner marked as hard, keyed by vocab card id ("v:<lesson>:<word>"). */
+  marked: Record<string, MarkedWord>;
+  /** Flashcards for marked words: two per word, "<vocabId>|nl" (Dutch → English) and "<vocabId>|en". */
+  flash: Record<string, SrsCard>;
   days: Record<string, DayLog>;
   xp: number;
   streak: { count: number; best: number; last?: string; freezes: number; freezeWeek?: string };

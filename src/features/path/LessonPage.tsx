@@ -11,6 +11,7 @@ import { ALL_STEPS, PART1, PART2, type StepId } from '@/store/types';
 import { LessonPlayer, STEP_META } from '../lesson/LessonPlayer';
 import { InteractiveText } from '../lesson/InteractiveText';
 import { ArticleChip } from '../lesson/steps/WordsStep';
+import { MarkButton } from '../flash/MarkButton';
 import { GrammarCard } from '../lesson/steps/GrammarStep';
 import { NoticeCard, speakerVoices } from '../lesson/steps/ListenStep';
 
@@ -180,6 +181,7 @@ export function LessonPage() {
                     {v.nl}
                   </span>
                   <span className="ml-auto truncate text-right text-sm text-muted">{v.en}</span>
+                  <MarkButton v={v} lesson={lesson.n} size="sm" />
                 </li>
               ))}
             </ul>

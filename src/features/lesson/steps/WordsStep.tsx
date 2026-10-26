@@ -9,6 +9,7 @@ import { shuffle, SpeakButton } from '@/design/ui';
 import { useStore } from '@/store/store';
 import { Run } from '../../practice/Run';
 import { Choices } from '../../practice/Exercises';
+import { MarkButton } from '../../flash/MarkButton';
 
 const GROUP = 8;
 
@@ -37,9 +38,12 @@ function WordCard({ v }: { v: VocabItem }) {
           <span lang="nl">{v.ex[0]}</span> — {v.ex[1]}
         </p>
       )}
-      <div className="mt-5 flex justify-center gap-2">
+      <div className="mt-5 flex items-center justify-center gap-2">
         <SpeakButton text={withArticle(v)} size="lg" />
         <SpeakButton text={withArticle(v)} slow />
+      </div>
+      <div className="absolute right-3 top-4">
+        <MarkButton v={v} />
       </div>
     </div>
   );

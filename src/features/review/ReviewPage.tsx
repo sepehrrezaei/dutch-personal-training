@@ -5,16 +5,25 @@ import { PageHeader } from '@/design/ui';
 import { celebrate } from '@/design/fx';
 import { useStore } from '@/store/store';
 import { ReviewDeck } from './ReviewDeck';
+import { FlashDeck } from '../flash/FlashDeck';
+import { FlashSession } from '../flash/FlashSession';
 
 export function ReviewPage() {
   const srs = useStore((s) => s.srs);
-  const [running, setRunning] = useState(false);
+  const [running, setRunning] = useState<false | 'review' | 'flash'>(false);
   const [round, setRound] = useState(0);
   const cards = Object.values(srs);
   const due = dueCount(srs);
   const known = cards.filter(isKnown).length;
   const learning = cards.length - known;
   const tomorrow = cards.filter((c) => c.due <= Date.now() + 864e5).length;
+
+  if (running === 'flash')
+    return (
+      <div className="mx-auto max-w-2xl">
+        <FlashSession limit={40} onExit={() => setRunning(false)} onDone={() => setRunning(false)} />
+      </div>
+    );
 
   if (running)
     return (
@@ -57,7 +66,7 @@ export function ReviewPage() {
           <>
             <h2 className="text-3xl">{due} words are waiting</h2>
             <p className="text-muted">Recognise, type and listen. Mistakes come back sooner — that's how memory works.</p>
-            <button className="btn-orange mt-2" onClick={() => setRunning(true)}>
+            <button className="btn-orange mt-2" onClick={() => setRunning('review')}>
               <Icon name="play" size={18} /> Review now
             </button>
           </>
@@ -68,6 +77,7 @@ export function ReviewPage() {
           </>
         )}
       </div>
+      <FlashDeck onStart={() => setRunning('flash')} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { withArticle } from '@/content/dsl';
 import type { VocabItem } from '@/content/schema';
 import { tokenize } from '@/engine/checker';
 import { speak } from '@/engine/speech';
+import { MarkButton } from '../flash/MarkButton';
 
 /** Guess dictionary forms for an inflected Dutch word: woont → wonen, kom → komen, dagen → dag. */
 export function guessLemma(word: string): VocabItem | undefined {
@@ -77,9 +78,14 @@ export function InteractiveText({ text, className = '' }: { text: string; classN
                     setOpen(null);
                   }}
                 >
-                  <strong className="block">{withArticle(v)}</strong>
-                  {v.en}
-                  {v.pl && <span className="block text-xs opacity-70">plural: {v.pl}</span>}
+                  <span className="flex items-center gap-2">
+                    <span>
+                      <strong className="block">{withArticle(v)}</strong>
+                      {v.en}
+                      {v.pl && <span className="block text-xs opacity-70">plural: {v.pl}</span>}
+                    </span>
+                    <MarkButton v={v} size="sm" />
+                  </span>
                 </motion.span>
               )}
             </AnimatePresence>
