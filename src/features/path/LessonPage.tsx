@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getGrammar, getLesson, LESSON_COUNT, UNITS } from '@/content';
 import { withArticle } from '@/content/dsl';
 import { Icon } from '@/design/icons';
-import { Tile } from '@/design/Tile';
+import { LessonMark } from '@/design/LessonMark';
 import { Empty, SpeakButton } from '@/design/ui';
 import { celebrate } from '@/design/fx';
 import { useStore } from '@/store/store';
@@ -86,7 +86,7 @@ export function LessonPage() {
       </div>
 
       <header className="flex flex-col gap-5 sm:flex-row sm:items-center">
-        <Tile icon={lesson.icon} state={state} size={112} />
+        <LessonMark n={n} icon={lesson.icon} state={state} size={88} />
         <div className="flex-1">
           <p className="eyebrow">Les {n}</p>
           <h1 className="text-4xl sm:text-5xl">{lesson.title}</h1>

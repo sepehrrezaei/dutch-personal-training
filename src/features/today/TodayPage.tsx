@@ -9,7 +9,8 @@ import { dutchVoices, onVoicesChanged, speak } from '@/engine/speech';
 import { cefrOf, levelOf, liveStreak } from '@/engine/xp';
 import { Icon } from '@/design/icons';
 import { Bar, Modal, ProgressRing } from '@/design/ui';
-import { Tile, type TileState } from '@/design/Tile';
+import type { TileState } from '@/design/Tile';
+import { LessonMark } from '@/design/LessonMark';
 import { useStore } from '@/store/store';
 import { ALL_STEPS, PART1 } from '@/store/types';
 import { activityInfo } from '../session/activityMeta';
@@ -270,21 +271,36 @@ export function TodayPage() {
             Whole course <Icon name="chevronRight" size={16} />
           </Link>
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {lessonsOf(unit).map((n) => {
+        <ol className="flex overflow-x-auto pb-2">
+          {lessonsOf(unit).map((n, i, all) => {
             const l = getLesson(n);
+            const st = tileState(state.lessons, n, current);
             return (
-              <Link key={n} to={`/lesson/${n}`} className="flex w-24 shrink-0 flex-col items-center gap-1.5 text-center">
-                <Tile icon={l?.icon ?? 'book'} state={tileState(state.lessons, n, current)} size={76} />
-                <span className="line-clamp-2 text-xs font-semibold">
-                  {n}. {l?.title ?? 'Binnenkort'}
-                </span>
-              </Link>
+              <li key={n} className="relative flex w-[104px] shrink-0 flex-col items-center">
+                {i < all.length - 1 && (
+                  <span aria-hidden className={`absolute left-[calc(50%+30px)] top-[23px] h-[3px] w-[calc(100%-60px)] rounded-full ${st === 'done' ? 'bg-cobalt' : 'bg-line'}`} />
+                )}
+                <Link to={`/lesson/${n}`} className="group flex flex-col items-center gap-2 px-1 text-center">
+                  <LessonMark n={n} icon={l?.icon ?? 'book'} state={st} size={48} />
+                  <span className={`line-clamp-2 text-xs font-semibold group-hover:text-cobalt ${n === current ? 'text-cobalt' : ''}`}>{l?.title ?? 'Binnenkort'}</span>
+                </Link>
+              </li>
             );
           })}
-        </div>
-        <p className="mt-2 text-sm text-muted">
-          {lessonsDone} of {LESSON_COUNT} lessons complete · tiles fill halfway after part 1 and fire blue when the lesson is done.
+        </ol>
+        <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
+          <span>
+            {lessonsDone} of {LESSON_COUNT} lessons done
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-3 w-3 rounded border-2 border-cobalt" /> next
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-3 w-3 overflow-hidden rounded border-2 border-cobalt bg-[linear-gradient(to_top,rgb(var(--cobalt)/0.35)_50%,transparent_50%)]" /> part 1 done
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-3 w-3 rounded bg-cobalt" /> finished
+          </span>
         </p>
       </motion.section>
     </div>
