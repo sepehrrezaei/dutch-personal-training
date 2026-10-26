@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { lessonOfVocab } from '@/content';
+import { cardIdOf, lessonOfVocab } from '@/content';
 import type { VocabItem } from '@/content/schema';
 import { vocabCardId } from '@/engine/srs';
 import { Icon } from '@/design/icons';
@@ -9,7 +9,7 @@ import { useStore } from '@/store/store';
 /** Star a word to add it to "Mijn kaarten", the flashcard deck for hard words. */
 export function MarkButton({ v, lesson, size = 'md', label = false }: { v: VocabItem; lesson?: number; size?: 'sm' | 'md'; label?: boolean }) {
   const n = lesson ?? lessonOfVocab(v);
-  const id = n ? vocabCardId(n, v.nl) : '';
+  const id = cardIdOf(v) ?? (n ? vocabCardId(n, v.nl) : '');
   const marked = useStore((s) => !!(id && s.marked[id]));
   const toggle = useStore((s) => s.toggleMark);
   if (!n) return null;

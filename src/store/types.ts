@@ -48,7 +48,9 @@ export type Activity =
   | { kind: 'speaking'; unit: number; count: number; minutes: number }
   | { kind: 'tutor'; scenario: string; minutes: number }
   | { kind: 'checkpoint'; unit: number; minutes: number }
-  | { kind: 'mock'; mock: number; part: 'A' | 'B'; minutes: number };
+  | { kind: 'mock'; mock: number; part: 'A' | 'B'; minutes: number }
+  /** The optional bonus round of a lesson. */
+  | { kind: 'extra'; lesson: number; minutes: number };
 
 export type DayType = 'weekday' | 'friday' | 'saturday' | 'sunday';
 
@@ -105,6 +107,8 @@ export interface AppData {
   version: 1;
   lessons: Record<number, LessonProgress>;
   checkpoints: number[];
+  /** Lessons whose optional bonus round is finished. */
+  bonusDone?: number[];
   srs: Record<string, SrsCard>;
   /** Words the learner marked as hard, keyed by vocab card id ("v:<lesson>:<word>"). */
   marked: Record<string, MarkedWord>;

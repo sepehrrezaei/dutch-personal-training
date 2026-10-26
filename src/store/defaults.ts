@@ -7,6 +7,7 @@ export function emptyData(): AppData {
     version: 1,
     lessons: {},
     checkpoints: [],
+    bonusDone: [],
     srs: {},
     marked: {},
     flash: {},

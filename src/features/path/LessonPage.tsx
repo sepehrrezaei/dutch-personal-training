@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { getGrammar, getLesson, LESSON_COUNT, UNITS } from '@/content';
+import { getBonus, getGrammar, getLesson, LESSON_COUNT, UNITS } from '@/content';
+import { practiceHref } from '@/app/PracticeRoute';
+import { EXTRA_MINUTES } from '@/engine/scheduler';
 import { withArticle } from '@/content/dsl';
 import { Icon } from '@/design/icons';
 import { LessonMark } from '@/design/LessonMark';
@@ -22,6 +24,8 @@ export function LessonPage() {
   const lesson = getLesson(n);
   const navigate = useNavigate();
   const progress = useStore((s) => s.lessons[n]);
+  const bonusDone = useStore((s) => (s.bonusDone ?? []).includes(n));
+  const bonus = getBonus(n);
   const [playing, setPlaying] = useState<StepId[] | null>(null);
   const [tab, setTab] = useState<Tab>('text');
   const [showEn, setShowEn] = useState(false);
@@ -135,6 +139,29 @@ export function LessonPage() {
           </button>
         </section>
       </div>
+
+      {bonus && (
+        <section className="card relative overflow-hidden border-oranje/40 p-5">
+          <div className="absolute inset-y-0 left-0 w-1.5 bg-oranje" aria-hidden />
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${bonusDone ? 'bg-polder text-white' : 'bg-oranje/15 text-oranje'}`}>
+              <Icon name={bonusDone ? 'check' : 'sparkles'} size={24} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="eyebrow text-oranje">Bonusronde · optional · ~{EXTRA_MINUTES} min</p>
+              <h2 className="text-xl">{bonus.title}</h2>
+              <p className="text-sm text-muted">{bonus.focus}</p>
+              <p className="mt-1 text-xs text-muted">
+                {bonus.vocab.length} extra words · a real-life text · {bonus.questions.length + bonus.exercises.length} exercises · {bonus.task.kind === 'speak' ? 'speaking' : 'writing'} task · {bonus.links.length} trusted links
+              </p>
+            </div>
+            <Link to={practiceHref({ kind: 'extra', lesson: n, minutes: EXTRA_MINUTES }, `/lesson/${n}`)} className={bonusDone ? 'btn-ghost shrink-0' : complete ? 'btn-orange shrink-0' : 'btn-ghost shrink-0'}>
+              {bonusDone ? 'Do it again' : 'Start bonus'} <Icon name="arrowRight" size={18} />
+            </Link>
+          </div>
+          {!complete && !bonusDone && <p className="mt-3 text-xs text-muted">Tip: the bonus works best after both parts of the lesson — but you can start any time.</p>}
+        </section>
+      )}
 
       <section className="card overflow-hidden">
         <div className="flex border-b border-line">

@@ -1,6 +1,7 @@
-import { getLesson } from '@/content';
+import { getBonus, getLesson } from '@/content';
 import type { Activity } from '@/store/types';
 import { LessonPlayer } from '../lesson/LessonPlayer';
+import { BonusPlayer } from '../lesson/BonusPlayer';
 import { ReviewDeck } from '../review/ReviewDeck';
 import { FlashSession } from '../flash/FlashSession';
 import type { RunResult } from '../practice/Run';
@@ -26,6 +27,11 @@ export function ActivityView({ activity: a, onDone, onExit }: { activity: Activi
       const l = getLesson(a.lesson);
       if (!l) return <Missing onDone={onDone} what={`Lesson ${a.lesson}`} />;
       return <LessonPlayer lesson={l} steps={a.steps} onDone={() => onDone()} onExit={onExit} />;
+    }
+    case 'extra': {
+      const b = getBonus(a.lesson);
+      if (!b) return <Missing onDone={onDone} what={`Bonus round ${a.lesson}`} />;
+      return <BonusPlayer bonus={b} onDone={onDone} onExit={onExit} />;
     }
     case 'drill':
       return <Drill id={a.drill} onDone={onDone} onExit={onExit} />;

@@ -131,3 +131,20 @@ export interface SpeakingTask {
   model: string;
   keywords: string[];
 }
+
+/** An optional extra round for a lesson: more words, a real-life text, practice, a task and trusted links. */
+export interface Bonus {
+  /** The lesson it extends. */
+  n: number;
+  title: string;
+  titleEn: string;
+  /** One sentence on what this bonus adds. */
+  focus: string;
+  vocab: VocabItem[];
+  text: Phrase[];
+  questions: MCQ[];
+  exercises: Exercise[];
+  task: { kind: 'speak' | 'write'; prompt: string; model: string };
+  /** Ids from content/sources.ts. */
+  links: string[];
+}

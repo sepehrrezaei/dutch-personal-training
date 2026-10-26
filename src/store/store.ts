@@ -31,6 +31,7 @@ interface Actions {
   addBonus(): void;
   addResult(r: Omit<ExamResult, 'date'>): void;
   completeCheckpoint(unit: number): void;
+  completeBonus(lesson: number): void;
   markSeen(ids: string[]): void;
   updateSettings(s: Partial<Settings>): void;
   replaceAll(d: AppData): void;
@@ -166,6 +167,19 @@ export const useStore = create<Store>()(
 
       updateSettings(patch) {
         setState((s) => ({ settings: { ...s.settings, ...patch } }));
+      },
+
+      completeBonus(lesson) {
+        setState((s) => {
+          const prev = s.bonusDone ?? [];
+          const fresh = !prev.includes(lesson);
+          return {
+            bonusDone: fresh ? [...prev, lesson] : prev,
+            xp: s.xp + (fresh ? XP.step * 2 : 0),
+            streak: touchStreak(s.streak, new Date()),
+            ...withDay(s, (d) => ({ ...d, xp: d.xp + (fresh ? XP.step * 2 : 0) })),
+          };
+        });
       },
 
       replaceAll(d) {

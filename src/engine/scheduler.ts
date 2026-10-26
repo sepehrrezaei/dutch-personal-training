@@ -9,10 +9,12 @@ export interface Curriculum {
   knmFor(lesson: number): string;
   tutorFor(unit: number): string;
   mockCount: number;
+  /** Whether a lesson has an optional bonus round. */
+  hasBonus?(lesson: number): boolean;
 }
 
 export const WEEKDAY_MINUTES = 30;
-export const PLAN_VERSION = 3;
+export const PLAN_VERSION = 4;
 const LESSONS_PER_WEEK = 2;
 
 export const STEP_MINUTES: Record<StepId, number> = {
@@ -180,9 +182,21 @@ function fit(acts: Activity[], target: number): Activity[] {
 
 const GROW: Partial<Record<Activity['kind'], [step: number, max: number]>> = { reading: [6, 4], listening: [5, 4], speaking: [3, 5], writing: [10, 2] };
 
-/** Fill leftover weekend time: first with drills not yet in the plan, then with more exam items. */
-function pad(acts: Activity[], target: number, lessonsDone: number, d: Date): Activity[] {
+export const EXTRA_MINUTES = 15;
+
+/** The bonus round to suggest: the most recently finished lesson whose bonus is still open. */
+export function nextExtra(data: AppData, cur: Curriculum): number | undefined {
+  if (!cur.hasBonus) return undefined;
+  const done = data.bonusDone ?? [];
+  return completedLessons(data, cur)
+    .reverse()
+    .find((n) => cur.hasBonus!(n) && !done.includes(n));
+}
+
+/** Fill leftover weekend time: first an open bonus round, then drills not yet in the plan, then more exam items. */
+function pad(acts: Activity[], target: number, lessonsDone: number, d: Date, extra?: number): Activity[] {
   const out = acts.map((a) => ({ ...a }));
+  if (extra && target - total(out) >= EXTRA_MINUTES) out.push({ kind: 'extra', lesson: extra, minutes: EXTRA_MINUTES });
   const unused = unlockedDrills(lessonsDone).filter((dr) => !out.some((a) => a.kind === 'drill' && a.drill === dr));
   const offset = dayIndex(d) % Math.max(1, unused.length);
   const drills = [...unused.slice(offset), ...unused.slice(0, offset)].slice(0, 2);
@@ -273,7 +287,7 @@ export function buildSession(data: AppData, cur: Curriculum, today: Date): Sessi
     acts.push({ kind: 'listening', unit: 1, count: 2, minutes: 10 });
     title = 'Weekend start';
     subtitle = 'Your first lessons at your own pace, then a taste of the exam';
-    return finish(today, dayType, title, subtitle, pad(fit(acts, target), target, done.length, today));
+    return finish(today, dayType, title, subtitle, pad(fit(acts, target), target, done.length, today, nextExtra(data, cur)));
   }
 
   if (dayType === 'saturday') {
@@ -314,7 +328,7 @@ export function buildSession(data: AppData, cur: Curriculum, today: Date): Sessi
       subtitle = behind > 0 ? 'Catch up a lesson, then write and speak' : 'Produce Dutch: write, speak, chat';
     }
   }
-  return finish(today, dayType, title, subtitle, pad(fit(acts, target), target, done.length, today));
+  return finish(today, dayType, title, subtitle, pad(fit(acts, target), target, done.length, today, nextExtra(data, cur)));
 }
 
 /** A follow-up session for learners who finished today's plan and want more. */
@@ -322,9 +336,11 @@ export function buildBonus(data: AppData, cur: Curriculum, today: Date): Session
   const next = nextPart(data, cur);
   const done = completedLessons(data, cur);
   const acts: Activity[] = [];
+  const extra = nextExtra(data, cur);
   if (next) acts.push({ kind: 'lesson', lesson: next.lesson, steps: next.steps, minutes: stepsMinutes(next.steps) });
-  else acts.push({ kind: 'reading', unit: 1 + (dayIndex(today) % 6), count: 2, minutes: 12 });
-  acts.push({ kind: 'drill', drill: pickDrill(done.length, today, 2), minutes: 5 });
+  else if (!extra) acts.push({ kind: 'reading', unit: 1 + (dayIndex(today) % 6), count: 2, minutes: 12 });
+  if (extra) acts.push({ kind: 'extra', lesson: extra, minutes: EXTRA_MINUTES });
+  else acts.push({ kind: 'drill', drill: pickDrill(done.length, today, 2), minutes: 5 });
   return finish(today, dayTypeOf(today), 'Bonus round', 'Extra practice — you are ahead of plan', acts);
 }
 
@@ -349,6 +365,8 @@ export function activityKey(a: Activity): string {
       return `tutor:${a.scenario}`;
     case 'quiz':
       return `quiz:${a.lessons.join(',')}`;
+    case 'extra':
+      return `extra:${a.lesson}`;
     default:
       return a.kind;
   }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { GRAMMAR, LESSON_COUNT, LESSONS, getGrammar, curriculum } from './index';
+import { BONUSES, GRAMMAR, LESSON_COUNT, LESSONS, cardIdOf, getGrammar, curriculum, vocabByCardId } from './index';
+import { ALL_SOURCES, SOURCES } from './sources';
 import { KNM } from './knm';
 import { LISTENING, READING, SPEAKING, WRITING } from './exam';
 import { MOCKS } from './exam/mocks';
@@ -93,5 +94,45 @@ describe('exam bank', () => {
   });
   it('tutor scenarios exist for every unit', () => {
     for (let u = 1; u <= 6; u++) expect(TUTOR_SCENARIOS.some((s) => s.unit === u)).toBe(true);
+  });
+});
+
+describe('bonus rounds', () => {
+  it('has one bonus per lesson, 1..42', () => {
+    expect(BONUSES.map((b) => b.n)).toEqual(Array.from({ length: LESSON_COUNT }, (_, i) => i + 1));
+  });
+
+  it.each(BONUSES.map((b) => [b.n, b] as const))('bonus %i is complete and valid', (_n, b) => {
+    expect(b.title && b.titleEn && b.focus).toBeTruthy();
+    expect(b.vocab.length).toBeGreaterThanOrEqual(12);
+    expect(b.text.length).toBeGreaterThanOrEqual(5);
+    expect(b.questions.length).toBeGreaterThanOrEqual(3);
+    expect(b.exercises.length).toBeGreaterThanOrEqual(4);
+    expect(b.task.prompt && b.task.model).toBeTruthy();
+    expect(b.links.length).toBeGreaterThanOrEqual(1);
+    for (const id of b.links) expect(SOURCES[id], `source ${id}`).toBeDefined();
+    for (const q of b.questions) expect(q.options[q.answer]).toBeDefined();
+    for (const ex of b.exercises) {
+      if (ex.type === 'mc') expect(ex.options[ex.answer]).toBeDefined();
+      if (ex.type === 'fill') expect(ex.prompt).toContain('___');
+      if (ex.type === 'order') expect(ex.words.length).toBeGreaterThanOrEqual(3);
+    }
+    const words = b.vocab.map((v) => `${v.art ?? ''} ${v.nl}`);
+    expect(new Set(words).size).toBe(words.length);
+  });
+
+  it('gives bonus words their own card ids that resolve back', () => {
+    for (const b of BONUSES)
+      for (const v of b.vocab) {
+        const id = cardIdOf(v)!;
+        expect(id.startsWith(`v:b${b.n}:`)).toBe(true);
+        expect(vocabByCardId(id)?.item).toBe(v);
+      }
+    const l = LESSONS[0];
+    expect(cardIdOf(l.vocab[0])).toBe(`v:1:${l.vocab[0].nl}`);
+  });
+
+  it('every source has an https link', () => {
+    for (const s of ALL_SOURCES) expect(s.url).toMatch(/^https:\/\//);
   });
 });

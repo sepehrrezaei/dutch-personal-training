@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import type { Lesson, VocabItem } from '@/content/schema';
 import { withArticle } from '@/content/dsl';
+import { cardIdOf } from '@/content';
 import { vocabCardId } from '@/engine/srs';
 import { prefetch, speak } from '@/engine/speech';
 import { Icon } from '@/design/icons';
@@ -91,7 +92,7 @@ export function WordsStep({ lesson, onDone }: { lesson: Lesson; onDone: () => vo
       setPhase('intro');
       setCard(0);
     } else {
-      addCards(lesson.vocab.map((v) => ({ id: vocabCardId(lesson.n, v.nl), lesson: lesson.n })));
+      addCards(lesson.vocab.map((v) => ({ id: cardIdOf(v) ?? vocabCardId(lesson.n, v.nl), lesson: lesson.n })));
       onDone();
     }
   };

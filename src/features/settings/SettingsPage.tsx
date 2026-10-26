@@ -4,6 +4,7 @@ import { speak, voiceLabel } from '@/engine/speech';
 import { useDutchVoices, VoiceHelp } from './VoiceHelp';
 import { VoiceEngine } from './VoiceEngine';
 import { Icon } from '@/design/icons';
+import { ALL_SOURCES } from '@/content/sources';
 import { Modal, PageHeader } from '@/design/ui';
 import { toast } from '@/design/fx';
 import { snapshot, useStore } from '@/store/store';
@@ -241,6 +242,28 @@ export function SettingsPage() {
             Reset progress
           </button>
         </Row>
+      </section>
+
+      <section className="card p-5">
+        <details>
+          <summary className="flex cursor-pointer items-center gap-2 font-display text-xl">
+            <Icon name="book" size={20} /> Bronnen · sources ({ALL_SOURCES.length})
+          </summary>
+          <p className="mt-2 text-sm text-muted">
+            The course follows the syllabus of the Delftse Methode; all texts and exercises are written for this app. The bonus rounds link to these official and trusted sites, and follow the
+            current exam formats published by DUO.
+          </p>
+          <ul className="mt-3 grid gap-1.5 text-sm sm:grid-cols-2">
+            {ALL_SOURCES.map((s) => (
+              <li key={s.id}>
+                <a href={s.url} target="_blank" rel="noreferrer" className="font-semibold text-cobalt hover:underline" lang="nl">
+                  {s.label}
+                </a>{' '}
+                <span className="text-muted">· {s.publisher}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
       </section>
 
       <Modal open={confirmReset} onClose={() => setConfirmReset(false)} title="Reset all progress?">

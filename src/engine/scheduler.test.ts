@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activityKey, buildSession, dateKey, lessonsBehind, nextPart, WEEKDAY_MINUTES, type Curriculum } from './scheduler';
+import { activityKey, buildBonus, buildSession, dateKey, lessonsBehind, nextExtra, nextPart, WEEKDAY_MINUTES, type Curriculum } from './scheduler';
 import { emptyData } from '@/store/defaults';
 import { ALL_STEPS, PART1, type AppData } from '@/store/types';
 import { newCard } from './srs';
@@ -117,5 +117,35 @@ describe('buildSession', () => {
       const keys = buildSession(d, cur, day).activities.map(activityKey);
       expect(new Set(keys).size).toBe(keys.length);
     }
+  });
+});
+
+describe('bonus rounds (extra)', () => {
+  const withBonus: Curriculum = { ...cur, hasBonus: () => true };
+
+  it('suggests the most recently finished lesson whose bonus is open', () => {
+    const d = withLessons(5);
+    expect(nextExtra(d, withBonus)).toBe(5);
+    d.bonusDone = [5, 4];
+    expect(nextExtra(d, withBonus)).toBe(3);
+    expect(nextExtra(withLessons(0), withBonus)).toBeUndefined();
+    expect(nextExtra(d, cur)).toBeUndefined();
+  });
+  it('never puts a bonus round in a weekday or Friday session', () => {
+    for (const day of [MON, FRI]) expect(buildSession(withLessons(6), withBonus, day).activities.some((a) => a.kind === 'extra')).toBe(false);
+  });
+  it('fills spare weekend time with a bonus round, within the weekend target', () => {
+    const d = withLessons(6);
+    d.settings.weekendMinutes = 120;
+    for (const day of [SAT, SUN]) {
+      const plan = buildSession(d, withBonus, day);
+      expect(plan.activities.some((a) => a.kind === 'extra')).toBe(true);
+      expect(plan.minutes).toBeLessThanOrEqual(120);
+    }
+  });
+  it('offers an open bonus round in the bonus session', () => {
+    const plan = buildBonus(withLessons(3), withBonus, MON);
+    expect(plan.activities.find((a) => a.kind === 'extra')).toMatchObject({ lesson: 3 });
+    expect(activityKey({ kind: 'extra', lesson: 3, minutes: 15 })).toBe('extra:3');
   });
 });

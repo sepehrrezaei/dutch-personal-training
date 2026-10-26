@@ -1,4 +1,4 @@
-import { getLesson, UNITS } from '@/content';
+import { getBonus, getLesson, UNITS } from '@/content';
 import { getKnm } from '@/content/knm';
 import { getScenario } from '@/content/tutor';
 import type { Activity, DrillId } from '@/store/types';
@@ -23,6 +23,8 @@ export function activityInfo(a: Activity): { title: string; sub: string; icon: s
       const l = getLesson(a.lesson);
       return { title: `Les ${a.lesson}: ${l?.title ?? ''}`, sub: a.steps.map((s) => STEP_META[s].label).join(' · '), icon: l?.icon ?? 'book' };
     }
+    case 'extra':
+      return { title: `Bonus ${a.lesson}: ${getBonus(a.lesson)?.title ?? ''}`, sub: 'Optional extra: real-life words, a text and trusted links', icon: 'sparkles' };
     case 'drill':
       return { title: DRILL_META[a.drill].title, sub: DRILL_META[a.drill].blurb, icon: DRILL_META[a.drill].icon };
     case 'quiz':

@@ -1,5 +1,5 @@
 import type { Curriculum } from '@/engine/scheduler';
-import type { GrammarTopic, KnmTheme, Lesson, Unit, VocabItem } from './schema';
+import type { Bonus, GrammarTopic, KnmTheme, Lesson, Unit, VocabItem } from './schema';
 import { unit1 } from './lessons/unit1';
 import { unit2 } from './lessons/unit2';
 import { unit3 } from './lessons/unit3';
@@ -12,6 +12,12 @@ import { grammar3 } from './grammar/g3';
 import { grammar4 } from './grammar/g4';
 import { grammar5 } from './grammar/g5';
 import { grammar6 } from './grammar/g6';
+import { bonus1 } from './bonus/b1';
+import { bonus2 } from './bonus/b2';
+import { bonus3 } from './bonus/b3';
+import { bonus4 } from './bonus/b4';
+import { bonus5 } from './bonus/b5';
+import { bonus6 } from './bonus/b6';
 import { KNM } from './knm';
 import { MOCKS } from './exam/mocks';
 import { TUTOR_SCENARIOS } from './tutor';
@@ -31,6 +37,39 @@ export const LESSON_COUNT = 42;
 const byN = new Map(LESSONS.map((l) => [l.n, l]));
 export function getLesson(n: number): Lesson | undefined {
   return byN.get(n);
+}
+
+/** Optional bonus rounds, one per lesson. */
+export const BONUSES: Bonus[] = [...bonus1, ...bonus2, ...bonus3, ...bonus4, ...bonus5, ...bonus6].sort((a, b) => a.n - b.n);
+const bonusByN = new Map(BONUSES.map((b) => [b.n, b]));
+export function getBonus(n: number): Bonus | undefined {
+  return bonusByN.get(n);
+}
+
+/** A bonus round shaped like a lesson, so the lesson steps (words, listening) can play it. */
+const bonusLessons = new Map<number, Lesson>();
+export function bonusAsLesson(b: Bonus): Lesson {
+  let l = bonusLessons.get(b.n);
+  if (!l) {
+    const base = getLesson(b.n);
+    l = {
+      n: b.n,
+      title: b.title,
+      titleEn: b.titleEn,
+      unit: unitOf(b.n),
+      icon: base?.icon ?? 'sparkles',
+      goals: [b.focus],
+      kind: b.text.some((p) => p.who) ? 'mixed' : 'text',
+      vocab: b.vocab,
+      text: b.text,
+      questions: [],
+      speaking: [],
+      grammar: [],
+      listening: [],
+    };
+    bonusLessons.set(b.n, l);
+  }
+  return l;
 }
 
 export const GRAMMAR: GrammarTopic[] = [...grammar1, ...grammar2, ...grammar3, ...grammar4, ...grammar5, ...grammar6].sort((a, b) => a.lesson - b.lesson);
@@ -58,6 +97,7 @@ export const curriculum: Curriculum = {
   knmFor: (n) => knmFor(n).id,
   tutorFor: (unit) => TUTOR_SCENARIOS.filter((s) => s.unit <= unit).slice(-1)[0]?.id ?? TUTOR_SCENARIOS[0].id,
   mockCount: MOCKS.length,
+  hasBonus: (n) => bonusByN.has(n),
 };
 
 /** Accepted spellings for a vocab item, e.g. "jij / je" → ["jij", "je"]; nouns with their article. */
@@ -70,12 +110,13 @@ export function acceptedForms(v: VocabItem): string[] {
   return v.art ? base.map((b) => `${v.art} ${b}`) : base;
 }
 
-/** Find a vocab item by card id "v:<lesson>:<nl>". */
+/** Find a vocab item by card id: "v:<lesson>:<nl>" for lesson words, "v:b<lesson>:<nl>" for bonus words. */
 export function vocabByCardId(id: string): { lesson: Lesson; item: VocabItem } | undefined {
-  const m = id.match(/^v:(\d+):(.+)$/);
+  const m = id.match(/^v:(b?)(\d+):(.+)$/);
   if (!m) return undefined;
-  const l = getLesson(Number(m[1]));
-  const item = l?.vocab.find((v) => v.nl === m[2]);
+  const b = m[1] ? getBonus(Number(m[2])) : undefined;
+  const l = m[1] ? b && bonusAsLesson(b) : getLesson(Number(m[2]));
+  const item = l?.vocab.find((v) => v.nl === m[3]);
   return l && item ? { lesson: l, item } : undefined;
 }
 
@@ -92,23 +133,41 @@ export function lookupWord(word: string): VocabItem | undefined {
         }
         if (v.pl) glossary.set(v.pl.toLowerCase(), v);
       }
+    // Bonus words fill gaps only: a lesson's own entry wins.
+    for (const b of BONUSES)
+      for (const v of b.vocab) {
+        for (const f of acceptedForms({ ...v, art: undefined })) {
+          const key = f.toLowerCase();
+          if (!glossary.has(key)) glossary.set(key, v);
+        }
+        if (v.pl && !glossary.has(v.pl.toLowerCase())) glossary.set(v.pl.toLowerCase(), v);
+      }
   }
   return glossary.get(word.toLowerCase().replace(/[’]/g, "'"));
 }
 
 const lessonByVocab = new Map<VocabItem, number>(LESSONS.flatMap((l) => l.vocab.map((v) => [v, l.n] as const)));
-/** The lesson that teaches a vocab item. */
+const bonusByVocab = new Map<VocabItem, number>(BONUSES.flatMap((b) => b.vocab.map((v) => [v, b.n] as const)));
+/** The lesson that teaches a vocab item (for bonus words: the lesson the bonus belongs to). */
 export function lessonOfVocab(v: VocabItem): number | undefined {
-  return lessonByVocab.get(v);
+  return lessonByVocab.get(v) ?? bonusByVocab.get(v);
+}
+
+/** The SRS / flashcard id of a vocab item, namespaced for bonus words. */
+export function cardIdOf(v: VocabItem): string | undefined {
+  const n = lessonByVocab.get(v);
+  if (n) return `v:${n}:${v.nl}`;
+  const b = bonusByVocab.get(v);
+  return b ? `v:b${b}:${v.nl}` : undefined;
 }
 
 /** A sentence that uses the word: its own example, or a line from the lesson text. */
 export function exampleFor(lesson: number, v: VocabItem): [string, string] | undefined {
   if (v.ex) return v.ex;
-  const l = getLesson(lesson);
-  if (!l) return undefined;
+  const text = bonusByVocab.has(v) ? getBonus(lesson)?.text : getLesson(lesson)?.text;
+  if (!text) return undefined;
   const forms = [...acceptedForms({ ...v, art: undefined }), v.pl].filter((f): f is string => !!f && f.length > 1).map((f) => f.toLowerCase());
-  const hit = l.text.find((p) => {
+  const hit = text.find((p) => {
     const words = p.nl.toLowerCase().replace(/[.,!?;:"“”()]/g, ' ').split(/\s+/);
     return forms.some((f) => (f.includes(' ') ? p.nl.toLowerCase().includes(f) : words.includes(f)));
   });

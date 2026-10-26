@@ -1,4 +1,4 @@
-import type { Article, Lesson, MCQ, Phrase, Question, VocabItem } from './schema';
+import type { Article, Bonus, Lesson, MCQ, Phrase, Question, VocabItem } from './schema';
 
 /* Compact authoring helpers so lesson files read like word lists and scripts. */
 
@@ -35,4 +35,8 @@ export function lesson(l: Omit<Lesson, 'vocab' | 'text' | 'questions'> & { vocab
 /** Display form of a vocab item including its article. */
 export function withArticle(v: VocabItem): string {
   return v.art ? `${v.art} ${v.nl}` : v.nl;
+}
+
+export function bonus(b: Omit<Bonus, 'vocab' | 'text'> & { vocab: V[]; text: [string, string, string][] }): Bonus {
+  return { ...b, vocab: vocab(b.vocab), text: script(b.text) };
 }

@@ -28,7 +28,7 @@ export function PathPage() {
   return (
     <div>
       <PageHeader eyebrow="Pad · your course" title="Van nul tot A2">
-        42 lessons in six units, following the Delftse Methode. {done} done.
+        42 lessons in six units, following the Delftse Methode. {done} done. Every lesson also has an optional bonus round ({state.bonusDone?.length ?? 0} done).
       </PageHeader>
       <div className="space-y-10">
         {UNITS.map((u) => {
@@ -70,6 +70,11 @@ export function PathPage() {
                           <p className="truncate font-semibold leading-snug group-hover:text-cobalt">{l?.title ?? 'Binnenkort'}</p>
                           <p className="truncate text-sm text-muted">{l?.titleEn}</p>
                         </div>
+                        {state.bonusDone?.includes(n) && (
+                          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-oranje/15 text-oranje" title="Bonus round done" aria-label="Bonus round done">
+                            <Icon name="sparkles" size={14} />
+                          </span>
+                        )}
                         <StatusChip state={st} isNext={isNext} />
                         <Icon name="chevronRight" size={18} className="shrink-0 text-muted" />
                       </Link>
