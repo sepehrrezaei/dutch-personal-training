@@ -1,4 +1,7 @@
 /* Browser speech: Dutch text-to-speech, speech recognition and a simple recorder. */
+import { cached } from './tts/cache';
+import { googleSpeak } from './tts/google';
+import { piperSpeak, piperStored } from './tts/piper';
 
 let voicesCache: SpeechSynthesisVoice[] = [];
 
@@ -60,10 +63,44 @@ export interface SpeakOptions {
   speaker?: number;
 }
 
-let config: { rate: number; voiceURI?: string; voiceURI2?: string } = { rate: 0.95 };
+export type SpeechEngine = 'device' | 'piper' | 'google';
 
-export function configureSpeech(c: { rate: number; voiceURI?: string; voiceURI2?: string }) {
+export interface SpeechConfig {
+  rate: number;
+  voiceURI?: string;
+  voiceURI2?: string;
+  engine?: SpeechEngine;
+  piperVoice?: string;
+  googleKey?: string;
+  googleVoice?: string;
+  googleVoice2?: string;
+}
+
+let config: SpeechConfig = { rate: 0.95 };
+let piperReady = new Set<string>();
+
+export function configureSpeech(c: SpeechConfig) {
   config = c;
+  // Load the Piper model in the background so the first sentence plays quickly.
+  if (c.engine === 'piper') refreshPiperReady().then(() => prefetch('Hallo.'));
+}
+
+/** Re-read which Piper voices are downloaded on this device. */
+export async function refreshPiperReady(): Promise<Set<string>> {
+  try {
+    piperReady = new Set(await piperStored());
+  } catch {
+    piperReady = new Set();
+  }
+  return piperReady;
+}
+
+type ErrorListener = (message: string) => void;
+const errorListeners = new Set<ErrorListener>();
+/** Get notified when the selected voice engine fails and the device voice is used instead. */
+export function onSpeechError(cb: ErrorListener): () => void {
+  errorListeners.add(cb);
+  return () => errorListeners.delete(cb);
 }
 
 function pickVoice(opts: SpeakOptions): SpeechSynthesisVoice | undefined {
@@ -80,8 +117,8 @@ function pickVoice(opts: SpeakOptions): SpeechSynthesisVoice | undefined {
   return voices[0];
 }
 
-/** Speak Dutch text; resolves when finished (or immediately if speech is unavailable). */
-export function speak(text: string, opts: SpeakOptions = {}): Promise<void> {
+/** Built-in browser voice. */
+function deviceSpeak(text: string, opts: SpeakOptions): Promise<void> {
   if (!ttsSupported()) return Promise.resolve();
   return new Promise((resolve) => {
     const u = new SpeechSynthesisUtterance(text);
@@ -97,7 +134,74 @@ export function speak(text: string, opts: SpeakOptions = {}): Promise<void> {
   });
 }
 
+/** Generate (or fetch from cache) audio with the selected neural engine. */
+async function synthesize(text: string, speaker = 0, background = false): Promise<Blob> {
+  if (config.engine === 'google') {
+    if (!config.googleKey) throw new Error('No Google API key set.');
+    const voice = (speaker === 1 ? config.googleVoice2 : config.googleVoice) ?? config.googleVoice;
+    if (!voice) throw new Error('No Google voice chosen.');
+    return cached('google', voice, text, () => googleSpeak(config.googleKey!, voice, text));
+  }
+  if (config.engine === 'piper') {
+    const voice = config.piperVoice ?? 'nl_NL-mls-medium';
+    if (!piperReady.has(voice)) throw new Error('The Piper voice is not downloaded yet (Settings → Voice).');
+    return cached('piper', voice, text, () => piperSpeak(voice, text, background));
+  }
+  throw new Error('device');
+}
+
+let current: { audio: HTMLAudioElement; done: () => void } | null = null;
+let playToken = 0;
+
+function playBlob(blob: Blob, rate: number): Promise<void> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.playbackRate = rate;
+    audio.preservesPitch = true;
+    const done = () => {
+      URL.revokeObjectURL(url);
+      if (current?.audio === audio) current = null;
+      resolve();
+    };
+    current = { audio, done };
+    audio.onended = done;
+    audio.onerror = done;
+    audio.play().catch(done);
+  });
+}
+
+/** Speak Dutch text; resolves when finished (or immediately if speech is unavailable). */
+export async function speak(text: string, opts: SpeakOptions = {}): Promise<void> {
+  const engine = config.engine ?? 'device';
+  if (engine === 'device' || opts.voiceURI) return deviceSpeak(text, opts);
+  stopSpeaking();
+  const token = ++playToken;
+  try {
+    const blob = await synthesize(text, opts.speaker);
+    if (token !== playToken) return;
+    // Neural voices sound natural at full speed; the learner's speed setting is applied on playback.
+    await playBlob(blob, opts.rate ?? config.rate);
+  } catch (err) {
+    if (token !== playToken) return;
+    const message = err instanceof Error ? err.message : String(err);
+    errorListeners.forEach((cb) => cb(message));
+    return deviceSpeak(text, opts);
+  }
+}
+
+/** Generate audio in the background so it plays without delay later. */
+export function prefetch(text: string, speaker = 0) {
+  if ((config.engine ?? 'device') === 'device') return;
+  synthesize(text, speaker, true).catch(() => {});
+}
+
 export function stopSpeaking() {
+  playToken++;
+  if (current) {
+    current.audio.pause();
+    current.done();
+  }
   if (ttsSupported()) window.speechSynthesis.cancel();
 }
 
@@ -109,6 +213,7 @@ export async function speakSequence(
   for (let i = 0; i < lines.length; i++) {
     if (opts.isCancelled?.()) return;
     opts.onLine?.(i);
+    if (lines[i + 1]) prefetch(lines[i + 1].text, lines[i + 1].speaker);
     await speak(lines[i].text, { rate: opts.rate, speaker: lines[i].speaker });
     if (opts.gapMs) await new Promise((r) => setTimeout(r, opts.gapMs));
   }

@@ -8,6 +8,7 @@ export default defineConfig({
   // GitHub Pages serves the site under /<repo>/; the deploy workflow sets BASE_PATH.
   base: process.env.BASE_PATH ?? '/',
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  worker: { format: 'es' },
   plugins: [
     react(),
     VitePWA({
@@ -28,7 +29,18 @@ export default defineConfig({
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'], maximumFileSizeToCacheInBytes: 5_000_000 },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        maximumFileSizeToCacheInBytes: 5_000_000,
+        // The Piper runtime (ONNX + phonemizer WebAssembly) comes from CDNs; keep it for offline use.
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/(cdnjs\.cloudflare\.com\/ajax\/libs\/onnxruntime-web|cdn\.jsdelivr\.net\/npm\/@diffusionstudio\/piper-wasm)\//,
+            handler: 'CacheFirst',
+            options: { cacheName: 'piper-runtime', expiration: { maxEntries: 20 }, cacheableResponse: { statuses: [0, 200] } },
+          },
+        ],
+      },
     }),
   ],
   test: { environment: 'node', include: ['src/**/*.test.ts'], setupFiles: ['fake-indexeddb/auto'] },

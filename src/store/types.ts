@@ -78,6 +78,12 @@ export interface Settings {
   style: 'claude' | 'intellij' | 'delft';
   voiceURI?: string;
   voiceURI2?: string;
+  /** Which speech engine reads Dutch aloud. */
+  ttsEngine?: 'device' | 'piper' | 'google';
+  piperVoice?: string;
+  googleTtsKey?: string;
+  googleVoice?: string;
+  googleVoice2?: string;
   rate: number;
   weekendMinutes: 60 | 90 | 120;
   apiKey?: string;

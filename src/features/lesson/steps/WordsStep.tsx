@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Lesson, VocabItem } from '@/content/schema';
 import { withArticle } from '@/content/dsl';
 import { vocabCardId } from '@/engine/srs';
-import { speak } from '@/engine/speech';
+import { prefetch, speak } from '@/engine/speech';
 import { Icon } from '@/design/icons';
 import { shuffle, SpeakButton } from '@/design/ui';
 import { useStore } from '@/store/store';
@@ -64,6 +64,10 @@ export function WordsStep({ lesson, onDone }: { lesson: Lesson; onDone: () => vo
   const [phase, setPhase] = useState<'intro' | 'quiz'>('intro');
   const [card, setCard] = useState(0);
   const group = groups[g];
+  // Generate the words of this group ahead of time when a neural voice is used.
+  useEffect(() => {
+    group.forEach((v) => prefetch(withArticle(v)));
+  }, [group]);
 
   const quiz: QuizItem[] = useMemo(
     () =>

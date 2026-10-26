@@ -29,8 +29,18 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173. Speech uses your system's Dutch voices: on macOS/iOS add one under
-*System Settings → Accessibility → Spoken Content → Manage voices → Dutch*. Speech recognition works in Chrome, Edge and Safari.
+Open http://localhost:5173. Speech recognition works in Chrome, Edge and Safari.
+
+### Voices (Settings → Voice)
+
+- **Device voice** — the browser's built-in voices. Free, but often robotic; Settings shows how to install better ones.
+- **Piper** — open-source neural TTS ([rhasspy/piper](https://github.com/rhasspy/piper)) running on your device via
+  WebAssembly in a Web Worker. The Dutch model (60–77 MB) downloads once from Hugging Face; after that it works offline.
+- **Google Cloud Text-to-Speech** — the most natural voices (Chirp 3 HD), two speakers for dialogues. Uses your own API key,
+  called directly from the browser; restrict the key to the Text-to-Speech API and your site's address.
+
+Generated speech is cached in the browser, so each sentence is synthesised only once. If the chosen engine fails, the
+app falls back to the device voice.
 
 ## Use it on your phone
 

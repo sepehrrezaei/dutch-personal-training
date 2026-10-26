@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { AI_MODELS, tutorTurn } from '@/engine/ai';
 import { speak, voiceLabel } from '@/engine/speech';
 import { useDutchVoices, VoiceHelp } from './VoiceHelp';
+import { VoiceEngine } from './VoiceEngine';
 import { Icon } from '@/design/icons';
 import { Modal, PageHeader } from '@/design/ui';
 import { toast } from '@/design/fx';
@@ -155,15 +156,15 @@ export function SettingsPage() {
 
       <section className="card px-5">
         <h2 className="pt-5 text-xl">Voice</h2>
-        <div className="mt-3">
+        <VoiceEngine>
           <VoiceHelp />
-        </div>
-        <Row title="Main voice">
-          <VoiceSelect value={settings.voiceURI} onChange={(voiceURI) => update({ voiceURI })} voices={voices} />
-        </Row>
-        <Row title="Second voice" hint="Used for the other person in dialogues.">
-          <VoiceSelect value={settings.voiceURI2} onChange={(voiceURI2) => update({ voiceURI2 })} voices={voices} speaker={1} />
-        </Row>
+          <Row title="Main voice">
+            <VoiceSelect value={settings.voiceURI} onChange={(voiceURI) => update({ voiceURI })} voices={voices} />
+          </Row>
+          <Row title="Second voice" hint="Used for the other person in dialogues.">
+            <VoiceSelect value={settings.voiceURI2} onChange={(voiceURI2) => update({ voiceURI2 })} voices={voices} speaker={1} />
+          </Row>
+        </VoiceEngine>
         <Row title={`Speaking speed: ${settings.rate.toFixed(2)}×`}>
           <div className="flex items-center gap-3">
             <input type="range" min={0.6} max={1.2} step={0.05} value={settings.rate} onChange={(e) => update({ rate: Number(e.target.value) })} className="flex-1 accent-[rgb(var(--cobalt))]" />

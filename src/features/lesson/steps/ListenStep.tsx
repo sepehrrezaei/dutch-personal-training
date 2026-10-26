@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import type { Lesson, Phrase } from '@/content/schema';
-import { speak, speakSequence, stopSpeaking } from '@/engine/speech';
+import { prefetch, speak, speakSequence, stopSpeaking } from '@/engine/speech';
 import { Icon } from '@/design/icons';
 import { SpeakButton } from '@/design/ui';
 import { InteractiveText } from '../InteractiveText';
@@ -86,7 +86,10 @@ export function ListenStep({ lesson, onDone }: { lesson: Lesson; onDone: () => v
   }, []);
 
   useEffect(() => {
-    if (stage === 1) speak(text[i].nl, { speaker: voiceOf(text[i]) });
+    if (stage === 1) {
+      speak(text[i].nl, { speaker: voiceOf(text[i]) });
+      if (text[i + 1]) prefetch(text[i + 1].nl, voiceOf(text[i + 1]));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [i, stage]);
 

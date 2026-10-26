@@ -40,11 +40,12 @@ function useTheme() {
 }
 
 function useSpeechConfig() {
-  const { rate, voiceURI, voiceURI2 } = useStore((s) => s.settings);
+  const { rate, voiceURI, voiceURI2, ttsEngine, piperVoice, googleTtsKey, googleVoice, googleVoice2 } = useStore((s) => s.settings);
   useEffect(() => {
-    configureSpeech({ rate, voiceURI, voiceURI2 });
-    return onVoicesChanged(() => configureSpeech({ rate, voiceURI, voiceURI2 }));
-  }, [rate, voiceURI, voiceURI2]);
+    const c = { rate, voiceURI, voiceURI2, engine: ttsEngine, piperVoice, googleKey: googleTtsKey, googleVoice, googleVoice2 };
+    configureSpeech(c);
+    return onVoicesChanged(() => configureSpeech(c));
+  }, [rate, voiceURI, voiceURI2, ttsEngine, piperVoice, googleTtsKey, googleVoice, googleVoice2]);
 }
 
 export function App() {
